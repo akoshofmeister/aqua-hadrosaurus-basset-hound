@@ -5,6 +5,9 @@ import { Comment } from './models';
 import {useEffect, useState} from "react";
 import {API, graphqlOperation, input} from 'aws-amplify';
 import * as subscriptions from './graphql/subscriptions';
+import {onCreateComment} from "./graphql/subscriptions";
+import {orderBy} from "lodash";
+import {sortBy} from "lodash/collection";
 
 function App() {
 
@@ -15,7 +18,7 @@ function App() {
     await DataStore.save(
       new Comment({
         "content": inputValue,
-        "created_at": new Date(),
+        "created_at": new Date().toISOString(),
         "user_id": "a3f4095e-39de-43d2-baf4-f8c16f0f6f4d",
         "blogpost_id": "a3f4095e-39de-43d2-baf4-f8c16f0f6f4d"
       })
@@ -23,7 +26,9 @@ function App() {
     setInputValue('');
   }
 
-  const fetchComments = async () => setComments(await DataStore.query(Comment));
+  const fetchComments = async () => setComments(orderComments(await DataStore.query(Comment)));
+
+  const orderComments = (comments) => (orderBy(comments, (c) => {console.log(new Date(c.created_at).getTime())}, 'ASC'))
 
   useEffect(async () => {
     await fetchComments();
@@ -31,7 +36,9 @@ function App() {
     const subscription = API.graphql(
       graphqlOperation(subscriptions.onCreateComment)
     ).subscribe({
-      next: ({ provider, value }) => setComments((p) => ([...p, value])),
+      next: ({ provider, value: { data: { onCreateComment: newComment } }}) => {
+        setComments((p) => orderComments([newComment, ...p]))
+      },
       error: error => console.warn(error)
     });
 
@@ -48,7 +55,7 @@ function App() {
           <button onClick={createComment}>Katt ide</button>
         </p>
         <p>
-          {comments.map(comment => <div style={{ backgroundColor: 'PapayaWhip', borderRadius: '50%', padding: '1rem', margin: '1rem' }}>
+          {comments.map(comment => <div style={{ backgroundColor: 'PapayaWhip', borderRadius: '50%', padding: '1rem', margin: '1rem', color: 'black' }}>
             <h1>{comment.content}</h1>
             <h5>{comment.created_at}</h5>
           </div>)}
