@@ -1,0 +1,26 @@
+type Comment @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  content: String
+  created_at: AWSDateTime
+  user_id: ID @index(name: "byUser")
+  blogpost_id: ID @index(name: "byBlogPost")
+}
+
+type User @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  name: String
+  email: AWSEmail
+  phone: AWSPhone
+  BlogPosts: [BlogPost] @hasMany(indexName: "byUser", fields: ["id"])
+  Comments: [Comment] @hasMany(indexName: "byUser", fields: ["id"])
+}
+
+type BlogPost @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String
+  content: String
+  created_at: AWSDateTime
+  updated_at: AWSDateTime
+  user_id: ID @index(name: "byUser")
+  Comments: [Comment] @hasMany(indexName: "byBlogPost", fields: ["id"])
+}
