@@ -28,10 +28,10 @@ function App() {
 
   const fetchComments = async () => setComments(orderComments(await DataStore.query(Comment)));
 
-  const orderComments = (comments) => (orderBy(comments, (c) => {console.log(new Date(c.created_at).getTime())}, 'ASC'))
+  const orderComments = (comments) => (orderBy(comments, (c) => new Date(c.created_at).getTime(), ['desc']))
 
-  useEffect(async () => {
-    await fetchComments();
+  useEffect(() => {
+    fetchComments();
 
     const subscription = API.graphql(
       graphqlOperation(subscriptions.onCreateComment)
@@ -43,7 +43,7 @@ function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, [])
+  }, [fetchComments])
 
   return (
     <div className="App">
@@ -55,7 +55,7 @@ function App() {
           <button onClick={createComment}>Katt ide</button>
         </p>
         <p>
-          {comments.map(comment => <div style={{ backgroundColor: 'PapayaWhip', borderRadius: '50%', padding: '1rem', margin: '1rem', color: 'black' }}>
+          {comments.map(comment => <div key={comment.id} style={{ backgroundColor: 'PapayaWhip', borderRadius: '50%', padding: '1rem', margin: '1rem', color: 'black' }}>
             <h1>{comment.content}</h1>
             <h5>{comment.created_at}</h5>
           </div>)}
