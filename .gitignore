@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/aqua-hadrosaurus-basset-hound
+/aqua-hadrosaurus-basset-hound.pub
+
+.idea
